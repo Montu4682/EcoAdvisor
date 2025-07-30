@@ -203,8 +203,11 @@
     <section id="recycling" class="py-5 bg-light">
         <div class="container">
             <div class="text-center mb-5">
-                <h2 class="h1 fw-bold text-success">Nearby Recycling Centers</h2>
-                <p class="lead text-muted">Find recycling centers in your area</p>
+                <h2 class="h1 fw-bold text-success">Location-Based Recycling Centers</h2>
+                <p class="lead text-muted">
+                    Real-time recycling facilities near you using OpenStreetMap data
+                    <br><small class="text-secondary">Allow location access for personalized results</small>
+                </p>
             </div>
 
             <div class="row g-4" id="recycling-content">

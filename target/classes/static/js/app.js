@@ -226,7 +226,29 @@ class EcoGuardianSpringApp {
 
     async loadRecyclingCenters() {
         try {
-            const response = await fetch(`${this.baseURL}/api/recycling-centers`);
+            // Try to get user's current location
+            let url = `${this.baseURL}/api/recycling-centers`;
+            
+            if (navigator.geolocation) {
+                await new Promise((resolve) => {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            url += `?lat=${lat}&lng=${lng}`;
+                            console.log(`Using user location: ${lat}, ${lng}`);
+                            resolve();
+                        },
+                        (error) => {
+                            console.log('Geolocation not available, using default location');
+                            resolve();
+                        },
+                        { timeout: 5000 }
+                    );
+                });
+            }
+            
+            const response = await fetch(url);
             if (response.ok) {
                 const centers = await response.json();
                 this.renderRecyclingCenters(centers);
@@ -241,35 +263,61 @@ class EcoGuardianSpringApp {
         const recyclingContent = document.getElementById('recycling-content');
         if (!recyclingContent) return;
 
-        recyclingContent.innerHTML = centers.map(center => `
-            <div class="col-lg-4 col-md-6">
-                <div class="card h-100 recycling-card">
-                    <div class="card-body">
-                        <h5 class="card-title text-success">${center.name}</h5>
-                        <p class="card-text">
-                            <i class="bi bi-geo-alt me-2"></i>${center.address}
-                            <br><i class="bi bi-telephone me-2"></i>${center.phone}
-                            <br><i class="bi bi-clock me-2"></i>${center.hours}
-                        </p>
-                        <div class="mb-3">
-                            <strong>Accepted Materials:</strong>
-                            <br>${center.acceptedMaterials.map(material => 
-                                `<span class="badge bg-secondary me-1 mb-1">${material}</span>`
-                            ).join('')}
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating-stars">
-                                ${Array.from({length: 5}, (_, i) => 
-                                    `<i class="bi bi-star${i < Math.floor(center.rating) ? '-fill' : ''}"></i>`
-                                ).join('')}
-                                <span class="ms-1">${center.rating}</span>
+        recyclingContent.innerHTML = `
+            <div class="col-12 mb-4">
+                <div class="alert alert-info">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    <strong>Location-Based Results:</strong> 
+                    ${centers.length > 0 ? 
+                        `Found ${centers.length} recycling centers near your location using real-time data from OpenStreetMap.` :
+                        'Using default location data. Allow location access for personalized results.'
+                    }
+                    <button class="btn btn-sm btn-outline-info ms-2" onclick="window.ecoApp.refreshRecyclingCenters()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+            ${centers.map(center => `
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 recycling-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title text-success">${center.name}</h5>
+                                ${center.id.startsWith('fallback') ? 
+                                    '<span class="badge bg-warning text-dark">Fallback Data</span>' :
+                                    '<span class="badge bg-success">Live Data</span>'
+                                }
                             </div>
-                            <small class="text-muted">${center.formattedDistance}</small>
+                            <p class="card-text">
+                                <i class="bi bi-geo-alt me-2"></i>${center.address}
+                                <br><i class="bi bi-telephone me-2"></i>${center.phone}
+                                <br><i class="bi bi-clock me-2"></i>${center.hours}
+                            </p>
+                            <div class="mb-3">
+                                <strong>Accepted Materials:</strong>
+                                <br>${center.acceptedMaterials.map(material => 
+                                    `<span class="badge bg-secondary me-1 mb-1">${material}</span>`
+                                ).join('')}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="rating-stars">
+                                    ${Array.from({length: 5}, (_, i) => 
+                                        `<i class="bi bi-star${i < Math.floor(center.rating) ? '-fill' : ''}"></i>`
+                                    ).join('')}
+                                    <span class="ms-1">${center.rating.toFixed(1)}</span>
+                                </div>
+                                <small class="text-muted">${center.formattedDistance}</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('')}
+        `;
+    }
+    
+    refreshRecyclingCenters() {
+        this.loadRecyclingCenters();
+        this.showToast('Refreshing recycling centers with your current location...', 'info');
     }
 
     handleImageSelect(event) {

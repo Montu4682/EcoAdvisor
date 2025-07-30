@@ -133,9 +133,15 @@ public class ApiController {
     }
     
     @GetMapping("/recycling-centers")
-    public ResponseEntity<?> getRecyclingCenters() {
+    public ResponseEntity<?> getRecyclingCenters(
+            @RequestParam(value = "lat", required = false) Double latitude,
+            @RequestParam(value = "lng", required = false) Double longitude) {
         try {
-            return ResponseEntity.ok(dataService.getRecyclingCenters());
+            if (latitude != null && longitude != null) {
+                return ResponseEntity.ok(dataService.getRecyclingCentersByLocation(latitude, longitude));
+            } else {
+                return ResponseEntity.ok(dataService.getRecyclingCenters());
+            }
         } catch (Exception e) {
             logger.error("Error retrieving recycling centers", e);
             return ResponseEntity.status(500)
