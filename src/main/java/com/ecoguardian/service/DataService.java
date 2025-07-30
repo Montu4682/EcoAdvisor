@@ -51,21 +51,25 @@ public class DataService {
         try {
             logger.info("Fetching recycling centers for location: {}, {}", latitude, longitude);
             
-            // Use Overpass API to find recycling centers near the location
-            String overpassQuery = buildOverpassQuery(latitude, longitude);
-            String overpassUrl = "https://overpass-api.de/api/interpreter";
+            // Use Google Maps Places API to find recycling centers near the location
+            String googleMapsApiKey = System.getenv("GOOGLE_MAPS_API_KEY");
+            if (googleMapsApiKey == null || googleMapsApiKey.trim().isEmpty()) {
+                logger.warn("Google Maps API key not found, using fallback data");
+                return getFallbackRecyclingCenters(latitude, longitude);
+            }
             
-            String response = restTemplate.postForObject(overpassUrl, overpassQuery, String.class);
+            String placesUrl = buildGooglePlacesUrl(latitude, longitude, googleMapsApiKey);
+            String response = restTemplate.getForObject(placesUrl, String.class);
             
             if (response != null) {
-                List<RecyclingCenter> centers = parseOverpassResponse(response);
+                List<RecyclingCenter> centers = parseGooglePlacesResponse(response, latitude, longitude);
                 if (!centers.isEmpty()) {
-                    logger.info("Found {} recycling centers from Overpass API", centers.size());
+                    logger.info("Found {} recycling centers from Google Maps API", centers.size());
                     return centers;
                 }
             }
         } catch (RestClientException e) {
-            logger.warn("Failed to fetch recycling centers from Overpass API: {}", e.getMessage());
+            logger.warn("Failed to fetch recycling centers from Google Maps API: {}", e.getMessage());
         } catch (Exception e) {
             logger.error("Error processing recycling centers data", e);
         }
@@ -75,58 +79,63 @@ public class DataService {
         return getFallbackRecyclingCenters(latitude, longitude);
     }
     
-    private String buildOverpassQuery(double lat, double lon) {
+    private String buildGooglePlacesUrl(double lat, double lon, String apiKey) {
         // Search within 10km radius for recycling facilities
-        double radius = 0.09; // Approximately 10km in degrees
-        double minLat = lat - radius;
-        double maxLat = lat + radius;
-        double minLon = lon - radius;
-        double maxLon = lon + radius;
+        String baseUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
+        String location = lat + "," + lon;
+        int radius = 10000; // 10km in meters
+        String type = "point_of_interest";
+        String keyword = "recycling center waste management";
         
         return String.format(
-            "[out:json][timeout:25];\n" +
-            "(\n" +
-            "  node[\"amenity\"=\"recycling\"](%f,%f,%f,%f);\n" +
-            "  node[\"amenity\"=\"waste_disposal\"](%f,%f,%f,%f);\n" +
-            "  node[\"shop\"=\"recycling\"](%f,%f,%f,%f);\n" +
-            ");\n" +
-            "out geom;",
-            minLat, minLon, maxLat, maxLon,
-            minLat, minLon, maxLat, maxLon,
-            minLat, minLon, maxLat, maxLon
+            "%s?location=%s&radius=%d&type=%s&keyword=%s&key=%s",
+            baseUrl, location, radius, type, keyword, apiKey
         );
     }
     
-    private List<RecyclingCenter> parseOverpassResponse(String response) {
+    private List<RecyclingCenter> parseGooglePlacesResponse(String response, double userLat, double userLon) {
         List<RecyclingCenter> centers = new ArrayList<>();
         
         try {
             JsonNode root = objectMapper.readTree(response);
-            JsonNode elements = root.path("elements");
+            JsonNode results = root.path("results");
             
             int count = 0;
-            for (JsonNode element : elements) {
+            for (JsonNode place : results) {
                 if (count >= 10) break; // Limit to 10 results
                 
-                String id = element.path("id").asText();
-                JsonNode tags = element.path("tags");
+                String id = place.path("place_id").asText();
+                String name = place.path("name").asText("Recycling Center");
+                String address = place.path("vicinity").asText("Address not available");
                 
-                String name = tags.path("name").asText("Recycling Center");
-                if (name.equals("Recycling Center")) {
-                    name = tags.path("operator").asText("Local Recycling Facility");
+                // Extract location for distance calculation
+                JsonNode geometry = place.path("geometry");
+                JsonNode location = geometry.path("location");
+                double placeLat = location.path("lat").asDouble();
+                double placeLng = location.path("lng").asDouble();
+                
+                // Calculate distance
+                double distance = calculateDistance(userLat, userLon, placeLat, placeLng);
+                
+                // Extract rating
+                double rating = place.path("rating").asDouble(4.0);
+                
+                // Get business status and hours
+                String hours = "Hours vary - please call ahead";
+                boolean isOpen = place.path("opening_hours").path("open_now").asBoolean(false);
+                if (isOpen) {
+                    hours = "Currently open - call for specific hours";
                 }
                 
-                // Build address from available location data
-                String address = buildAddress(tags, element);
-                String phone = tags.path("phone").asText("Contact location for details");
-                String hours = tags.path("opening_hours").asText("Hours vary - please call ahead");
+                // Check if place is currently operational
+                String businessStatus = place.path("business_status").asText("OPERATIONAL");
+                if (!businessStatus.equals("OPERATIONAL")) {
+                    continue; // Skip closed businesses
+                }
                 
-                // Determine accepted materials
-                List<String> materials = getAcceptedMaterials(tags);
-                
-                // Calculate approximate distance (simplified)
-                double distance = Math.random() * 8 + 1; // 1-9 km range for demo
-                double rating = 3.5 + Math.random() * 1.5; // 3.5-5.0 rating
+                // Default phone and materials
+                String phone = "Contact location for details";
+                List<String> materials = getDefaultMaterials(name);
                 
                 centers.add(new RecyclingCenter(
                     id, name, address, phone, materials, hours, distance, rating
@@ -134,73 +143,49 @@ public class DataService {
                 count++;
             }
         } catch (Exception e) {
-            logger.error("Error parsing Overpass API response", e);
+            logger.error("Error parsing Google Places API response", e);
         }
         
         return centers;
     }
     
-    private String buildAddress(JsonNode tags, JsonNode element) {
-        StringBuilder address = new StringBuilder();
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        // Haversine formula for calculating distance between two points
+        final int R = 6371; // Radius of the earth in km
         
-        String houseNumber = tags.path("addr:housenumber").asText("");
-        String street = tags.path("addr:street").asText("");
-        String city = tags.path("addr:city").asText("");
-        String postcode = tags.path("addr:postcode").asText("");
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         
-        if (!houseNumber.isEmpty() && !street.isEmpty()) {
-            address.append(houseNumber).append(" ").append(street);
-        } else if (!street.isEmpty()) {
-            address.append(street);
-        }
-        
-        if (!city.isEmpty()) {
-            if (address.length() > 0) address.append(", ");
-            address.append(city);
-        }
-        
-        if (!postcode.isEmpty()) {
-            if (address.length() > 0) address.append(" ");
-            address.append(postcode);
-        }
-        
-        // If no address components found, use coordinates
-        if (address.length() == 0) {
-            double lat = element.path("lat").asDouble();
-            double lon = element.path("lon").asDouble();
-            address.append(String.format("Location: %.4f, %.4f", lat, lon));
-        }
-        
-        return address.toString();
+        return R * c; // Distance in km
     }
     
-    private List<String> getAcceptedMaterials(JsonNode tags) {
+    private List<String> getDefaultMaterials(String placeName) {
         List<String> materials = new ArrayList<>();
+        String lowerName = placeName.toLowerCase();
         
-        // Check for specific recycling types
-        if (tags.path("recycling:paper").asText("").equals("yes")) materials.add("Paper");
-        if (tags.path("recycling:plastic").asText("").equals("yes")) materials.add("Plastic");
-        if (tags.path("recycling:glass").asText("").equals("yes")) materials.add("Glass");
-        if (tags.path("recycling:metal").asText("").equals("yes")) materials.add("Metal");
-        if (tags.path("recycling:electronics").asText("").equals("yes")) materials.add("Electronics");
-        if (tags.path("recycling:batteries").asText("").equals("yes")) materials.add("Batteries");
-        if (tags.path("recycling:clothes").asText("").equals("yes")) materials.add("Textiles");
-        
-        // If no specific materials found, add common ones
-        if (materials.isEmpty()) {
-            String recyclingType = tags.path("recycling_type").asText("");
-            if (recyclingType.contains("container") || recyclingType.isEmpty()) {
-                materials.addAll(Arrays.asList("Paper", "Plastic", "Glass", "Metal"));
-            }
-        }
-        
-        // Ensure at least some materials are listed
-        if (materials.isEmpty()) {
-            materials.addAll(Arrays.asList("General Recycling", "Mixed Materials"));
+        if (lowerName.contains("electronic") || lowerName.contains("e-waste")) {
+            materials.addAll(Arrays.asList("Electronics", "Batteries", "Computer Equipment"));
+        } else if (lowerName.contains("metal") || lowerName.contains("scrap")) {
+            materials.addAll(Arrays.asList("Metal", "Aluminum", "Steel", "Copper"));
+        } else if (lowerName.contains("paper") || lowerName.contains("cardboard")) {
+            materials.addAll(Arrays.asList("Paper", "Cardboard", "Newspapers", "Magazines"));
+        } else if (lowerName.contains("plastic")) {
+            materials.addAll(Arrays.asList("Plastic Bottles", "Plastic Containers", "Plastic Bags"));
+        } else if (lowerName.contains("glass")) {
+            materials.addAll(Arrays.asList("Glass Bottles", "Glass Containers", "Window Glass"));
+        } else {
+            // General recycling center
+            materials.addAll(Arrays.asList("Paper", "Plastic", "Glass", "Metal", "Cardboard"));
         }
         
         return materials;
     }
+    
+
     
     private List<RecyclingCenter> getFallbackRecyclingCenters(double latitude, double longitude) {
         // Generate location-aware fallback data based on coordinates

@@ -4,7 +4,7 @@
 
 Eco Guardian is a modern Spring Boot web application that uses Spring AI to help users identify wasteful items and find eco-friendly alternatives. The application analyzes uploaded images using OpenAI's GPT-4o vision model, suggests sustainable alternatives, calculates CO2 savings, and gamifies the experience through a reward system with EcoPoints and achievements.
 
-**Latest Update**: Successfully converted to Spring Boot with Spring AI integration (July 30, 2025)
+**Latest Update**: Successfully converted to Spring Boot with Spring AI integration and integrated Google Maps API for location-based recycling centers (July 30, 2025)
 
 ## User Preferences
 

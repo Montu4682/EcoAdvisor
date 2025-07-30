@@ -205,7 +205,7 @@
             <div class="text-center mb-5">
                 <h2 class="h1 fw-bold text-success">Location-Based Recycling Centers</h2>
                 <p class="lead text-muted">
-                    Real-time recycling facilities near you using OpenStreetMap data
+                    Real-time recycling facilities near you using Google Maps data
                     <br><small class="text-secondary">Allow location access for personalized results</small>
                 </p>
             </div>

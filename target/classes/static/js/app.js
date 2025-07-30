@@ -269,7 +269,7 @@ class EcoGuardianSpringApp {
                     <i class="bi bi-geo-alt me-2"></i>
                     <strong>Location-Based Results:</strong> 
                     ${centers.length > 0 ? 
-                        `Found ${centers.length} recycling centers near your location using real-time data from OpenStreetMap.` :
+                        `Found ${centers.length} recycling centers near your location using real-time data from Google Maps.` :
                         'Using default location data. Allow location access for personalized results.'
                     }
                     <button class="btn btn-sm btn-outline-info ms-2" onclick="window.ecoApp.refreshRecyclingCenters()">
