@@ -1,0 +1,15 @@
+com/ecoguardian/service/OpenAIService.class
+com/ecoguardian/servlet/UserServlet.class
+com/ecoguardian/servlet/BaseServlet.class
+com/ecoguardian/service/StorageService.class
+com/ecoguardian/servlet/NewsServlet.class
+com/ecoguardian/model/AnalysisResult$Analysis.class
+com/ecoguardian/model/AnalysisResult.class
+com/ecoguardian/model/User.class
+com/ecoguardian/model/NewsItem.class
+com/ecoguardian/model/RecyclingCenter.class
+com/ecoguardian/model/AnalysisResult$Alternative.class
+com/ecoguardian/servlet/RecyclingCentersServlet.class
+com/ecoguardian/model/Action.class
+com/ecoguardian/servlet/AIAnalysisServlet.class
+com/ecoguardian/servlet/ActionsServlet.class
