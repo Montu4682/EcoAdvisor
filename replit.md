@@ -2,9 +2,9 @@
 
 ## Overview
 
-Eco Guardian is a full-stack Java web application that uses AI to help users identify wasteful items and find eco-friendly alternatives. The application analyzes uploaded images using computer vision, suggests sustainable alternatives, calculates CO2 savings, and gamifies the experience through a reward system with EcoPoints and achievements.
+Eco Guardian is a modern Spring Boot web application that uses Spring AI to help users identify wasteful items and find eco-friendly alternatives. The application analyzes uploaded images using OpenAI's GPT-4o vision model, suggests sustainable alternatives, calculates CO2 savings, and gamifies the experience through a reward system with EcoPoints and achievements.
 
-**Recent Conversion**: Successfully converted from React/TypeScript/Node.js to Java JSP architecture (July 30, 2025)
+**Latest Update**: Successfully converted to Spring Boot with Spring AI integration (July 30, 2025)
 
 ## User Preferences
 
@@ -13,52 +13,50 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: Java Server Pages (JSP) with JSTL
-- **Styling**: Bootstrap 5.3.2 with custom eco-themed CSS
+- **Framework**: Java Server Pages (JSP) with JSTL and Bootstrap 5.3.2
+- **Styling**: Custom eco-themed CSS with Spring AI branding
 - **UI Components**: Bootstrap components with Bootstrap Icons
-- **JavaScript**: Vanilla JavaScript with modern ES6+ features
-- **Build Tool**: Maven for dependency management and build process
+- **JavaScript**: Modern ES6+ SPA functionality with AJAX
+- **Build Tool**: Maven with Spring Boot packaging
 
 ### Backend Architecture
-- **Runtime**: Java 21 with Jakarta EE
-- **Framework**: Jakarta Servlet API with embedded Jetty server
-- **Web Container**: Eclipse Jetty for development and deployment
-- **AI Integration**: OpenAI GPT-4o for image analysis via HTTP client
-- **Session Management**: HTTP session-based state management
+- **Runtime**: Java 21 with Spring Boot 3.2.2
+- **Framework**: Spring MVC with embedded Tomcat server
+- **Web Container**: Apache Tomcat (embedded) for development and deployment
+- **AI Integration**: Spring AI with OpenAI GPT-4o vision model
+- **Data Layer**: Spring Data JPA with Hibernate ORM
 
 ### Data Storage Strategy
-- **Development Storage**: In-memory storage using ConcurrentHashMap
-- **Production Ready**: Designed for easy PostgreSQL integration
-- **Service Layer**: StorageService singleton pattern for data operations
-- **Thread Safety**: Concurrent collections for multi-user support
+- **Development Database**: H2 in-memory database with web console
+- **Production Ready**: PostgreSQL configuration included
+- **ORM**: Hibernate with automatic schema generation
+- **Repository Pattern**: Spring Data JPA repositories for data access
 
 ## Key Components
 
-### AI Analysis Service (OpenAIService.java)
-- **Image Recognition**: OpenAI GPT-4o vision model for item identification
-- **HTTP Client**: Apache HttpClient 5 for API communication
-- **Fallback System**: Demo data when API quota exceeded
-- **Error Handling**: Comprehensive error management with user-friendly messages
+### Spring AI Analysis Service
+- **Image Recognition**: Spring AI ChatClient with OpenAI GPT-4o vision model
+- **Integration**: Native Spring AI framework for seamless OpenAI integration
+- **Fallback System**: Comprehensive demo data when API quota exceeded
+- **Error Handling**: Spring Boot exception handling with user-friendly messages
 
-### Servlet Architecture
-- **AIAnalysisServlet**: Handles image upload and AI analysis requests
-- **UserServlet**: Manages user data and profile information
-- **ActionsServlet**: Tracks user actions and history
-- **NewsServlet**: Provides environmental news and updates
-- **RecyclingCentersServlet**: Locates nearby recycling facilities
+### Spring MVC Controller Architecture
+- **HomeController**: Serves main JSP page with user context
+- **ApiController**: RESTful endpoints for all AJAX operations
+- **Exception Handling**: Global exception handling with proper HTTP status codes
+- **Content Negotiation**: JSON responses for API endpoints, JSP for web pages
 
-### Data Models
-- **User**: EcoPoints, levels, achievements, and progress tracking
-- **AnalysisResult**: AI analysis results with alternatives and environmental impact
-- **Action**: User action history with points and CO2 savings
-- **NewsItem**: Environmental news with categorization
-- **RecyclingCenter**: Facility information with accepted materials
+### JPA Entity Models
+- **User Entity**: EcoPoints, levels, achievements with JPA annotations
+- **Action Entity**: User action history with bidirectional relationships
+- **DTO Classes**: AnalysisResult, NewsItem, RecyclingCenter for data transfer
+- **Repository Layer**: Spring Data JPA repositories with custom queries
 
-### User Interface (JSP Pages)
-- **index.jsp**: Single-page application with all sections
-- **Bootstrap Integration**: Responsive design with modern UI components
-- **JavaScript SPA**: Dynamic content loading without page refreshes
-- **Error Pages**: Custom 404 and 500 error handling
+### User Interface (Spring Boot JSP)
+- **index.jsp**: Single-page application with Spring integration
+- **Bootstrap Integration**: Modern responsive design with Spring AI branding
+- **JavaScript SPA**: AJAX communication with Spring Boot REST endpoints
+- **Static Resources**: CSS/JS served from Spring Boot static resources
 
 ## Data Flow
 
@@ -114,10 +112,11 @@ Preferred communication style: Simple, everyday language.
 - **API Integration**: Robust error handling and fallback mechanisms
 - **File Upload**: Configurable size limits and validation
 
-### Running the Application
-- **Development Server**: `./run_server.sh` or `mvn jetty:run`
-- **Port Configuration**: Jetty runs on port 5000 with host 0.0.0.0
-- **Environment**: Requires OPENAI_API_KEY environment variable
-- **Dependencies**: Maven automatically downloads required JAR files
+### Running the Spring Boot Application
+- **Development Server**: `mvn spring-boot:run` starts embedded Tomcat
+- **Port Configuration**: Tomcat runs on port 5000 (configurable via application.yml)
+- **Environment**: Uses OPENAI_API_KEY environment variable for Spring AI
+- **Hot Reload**: Spring Boot DevTools for automatic restart during development
+- **Database Console**: H2 web console available at `/h2-console`
 
-The application follows Java enterprise patterns with modern web development practices, providing a robust and scalable foundation for environmental sustainability tracking through AI-powered analysis.
+The application follows Spring Boot best practices with modern enterprise patterns, providing a robust and scalable foundation for environmental sustainability tracking through Spring AI-powered analysis.

@@ -1,0 +1,66 @@
+server:
+  port: 5000
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: eco-guardian
+  
+  # JSP Configuration
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+  
+  # Database Configuration (H2 for development)
+  datasource:
+    url: jdbc:h2:mem:ecoguardian
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+      enabled: true
+
+  # Spring AI Configuration
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:dummy-key}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.7
+          max-tokens: 1000
+
+# Logging Configuration
+logging:
+  level:
+    com.ecoguardian: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Custom Application Properties
+app:
+  name: "Eco Guardian"
+  version: "2.0.0 - Spring Boot Edition"
+  description: "AI-Powered Waste Reduction & Reusability Advisor"
