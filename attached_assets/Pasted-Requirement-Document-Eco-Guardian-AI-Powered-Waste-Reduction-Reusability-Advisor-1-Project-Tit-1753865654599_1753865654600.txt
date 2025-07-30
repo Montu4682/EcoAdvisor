@@ -1,0 +1,39 @@
+Requirement Document: Eco Guardian - AI-Powered Waste Reduction & Reusability Advisor
+1. Project Title
+Eco Guardian: AI-Powered Waste Reduction & Reusability Advisor
+2. Problem Statement
+With increasing environmental awareness, most consumers are still unaware of the environmental impact of single-use items in their daily lives. Tracking and reducing individual waste is difficult due to a lack of easily accessible tools. There is a need for an AI-powered solution that offers real-time suggestions for reusable alternatives, reducing waste effectively.
+3. Objective
+To develop an AI-powered chatbot that: - Identifies disposable or wasteful items from user-submitted images. - Provides eco-friendly, reusable alternatives. - Estimates CO2 savings by switching to greener alternatives. - Suggests nearby recycling centers or eco-friendly stores. - Encourages sustainable behavior via gamification and reward points. - Displays news feeds and event boards related to environmental sustainability.
+4. Key Features & Functional Requirements
+a. Identify Items
+Input: Image of a plastic bottle, food container, etc. Technology: Use Computer Vision and AI-powered image recognition. Output: Identify the type of object (e.g., plastic bottle).
+b. Provide Eco-Friendly Alternatives
+Suggest reusable/recyclable alternatives (e.g., stainless steel bottle, bamboo toothbrush). Use LLM or text generation model to generate suggestions dynamically.
+c. Suggest Local Recycling Centers
+Use Google Maps API to show nearby: - Recycling centers - Stores selling reusable alternatives
+d. Estimate Environmental Impact
+Estimate CO2 saved by switching from disposable to reusable items. Use online data from sites like www.carbonfootprint.com.
+e. Gamify the Experience
+Reward system: 'EcoPoints'. Encourage user to make greener decisions and track progress. Add point system or quizzes.
+f. News Feed & Events
+Integrate notice board/news section using Google search with custom filters. Show sustainability events, awareness news, and local environmental meetups.
+5. Non-Functional Requirements
+- User-friendly UI (Web/mobile app or chatbot interface) - Responsive design - Voice-over support in screen recording - Scalable architecture for image processing and NLP
+6. Tech Stack Suggestions
+
+7. Deliverables
+- PPT: Solution architecture, approach (in PDF format). - Screen Recording: Explanation of the full system (voice-over mandatory).
+8. Prompt Examples for Implementation
+📸 Image Identification Prompt
+You are an AI model that receives an image. Detect if the object in the image is a disposable item (plastic, paper cup, etc.) and output the name of the object.
+🌿 Eco-Friendly Suggestion Prompt
+Based on the object '[object name]', suggest eco-friendly, reusable alternatives. Provide 2–3 practical and affordable options.
+📍 Local Recycling Center Search Prompt
+Using Google Maps API, find and display nearby recycling centers or eco-friendly shops near [user location or GPS coordinates].
+💨 Environmental Impact Estimation Prompt
+Calculate how much CO2 can be saved annually if a user switches from [disposable item] to [reusable alternative], using data from www.carbonfootprint.com or similar resources.
+🎮 Gamification Prompt
+Reward the user with points for every switch to an eco-friendly product. Track their progress and show motivational messages after every milestone (e.g., 10 items replaced = 100 EcoPoints).
+📰 News Feed Prompt
+Use Google Custom Search API to fetch the latest news and events related to environmental awareness, recycling, and green innovations.
