@@ -13,9 +13,9 @@ export function useImageUpload() {
         throw new Error('Please select a valid image file');
       }
 
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        throw new Error('Image size must be less than 10MB');
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Image size must be less than 5MB');
       }
 
       // Create preview URL

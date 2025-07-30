@@ -28,10 +28,14 @@ export default function AIAnalyzer() {
     },
     onError: (error) => {
       const isQuotaError = error.message.includes('quota') || error.message.includes('429');
+      const isPayloadError = error.message.includes('entity too large');
+      
       toast({
-        title: isQuotaError ? "API Quota Exceeded" : "Analysis Failed",
+        title: isQuotaError ? "API Quota Exceeded" : isPayloadError ? "Image Too Large" : "Analysis Failed",
         description: isQuotaError 
           ? "Your OpenAI API key has reached its usage limit. Please check your OpenAI billing settings or try again later."
+          : isPayloadError
+          ? "The image file is too large. Please choose a smaller image (under 5MB)."
           : error.message,
         variant: "destructive",
       });

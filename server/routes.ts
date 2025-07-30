@@ -61,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         item,
         analysis: analysisResult
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Analysis error:", error);
       const isQuotaError = error.message?.includes('quota') || error.status === 429;
       res.status(isQuotaError ? 429 : 500).json({ 
