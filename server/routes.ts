@@ -63,7 +63,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Analysis error:", error);
-      res.status(500).json({ message: "Failed to analyze image. Please try again." });
+      const isQuotaError = error.message?.includes('quota') || error.status === 429;
+      res.status(isQuotaError ? 429 : 500).json({ 
+        message: isQuotaError 
+          ? "OpenAI API quota exceeded. Please check your billing settings and try again later."
+          : "Failed to analyze image. Please try again." 
+      });
     }
   });
 

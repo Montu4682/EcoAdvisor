@@ -27,9 +27,12 @@ export default function AIAnalyzer() {
       });
     },
     onError: (error) => {
+      const isQuotaError = error.message.includes('quota') || error.message.includes('429');
       toast({
-        title: "Analysis Failed",
-        description: error.message,
+        title: isQuotaError ? "API Quota Exceeded" : "Analysis Failed",
+        description: isQuotaError 
+          ? "Your OpenAI API key has reached its usage limit. Please check your OpenAI billing settings or try again later."
+          : error.message,
         variant: "destructive",
       });
     },

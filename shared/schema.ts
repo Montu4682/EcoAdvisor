@@ -1,10 +1,19 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, json } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  integer,
+  timestamp,
+  json,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   ecoPoints: integer("eco_points").notNull().default(0),
   level: text("level").notNull().default("Eco Starter"),
@@ -12,7 +21,9 @@ export const users = pgTable("users", {
 });
 
 export const items = pgTable("items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id),
   itemName: text("item_name").notNull(),
   itemType: text("item_type").notNull(),
@@ -25,7 +36,9 @@ export const items = pgTable("items", {
 });
 
 export const userActions = pgTable("user_actions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id),
   actionType: text("action_type").notNull(),
   itemId: varchar("item_id").references(() => items.id),
